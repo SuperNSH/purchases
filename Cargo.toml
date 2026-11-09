@@ -1,0 +1,10 @@
+[package]
+name = "nsh-purchases"
+version = "0.0.1"
+edition = "2024"
+license = "MIT"
+description = "Products, purchases, restores and entitlements, without a backend."
+repository = "https://github.com/SuperNSH/purchases"
+publish = false
+
+[dependencies]
