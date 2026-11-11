@@ -1,10 +1,10 @@
-[package]
-name = "nsh-purchases"
-version = "0.0.1"
+[workspace]
+members = ["crates/nsh-purchases"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
 edition = "2024"
 license = "MIT"
-description = "Products, purchases, restores and entitlements, without a backend."
 repository = "https://github.com/SuperNSH/purchases"
-publish = false
-
-[dependencies]
+authors = ["hmziqrs"]
