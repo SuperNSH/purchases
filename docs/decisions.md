@@ -11,9 +11,9 @@ The brief names four repos to clone into `.refs/` (read-only, git-ignored). Thre
 - `longbridge/nsh` — Native Shell main: the Rust crates and TSX typings this library wraps.
 - `SuperNSH/biometrics` — the org layout, API naming and error-code style this repo follows.
 
-## NSH 0.4.0
+## NSH 0.5.0
 
-The brief pinned NSH 0.4.0. `nsh-core` 0.4.0 is on crates.io and compiles clean against stable Rust, and the CLI here is 0.4.0, so the crate builds against the released version; no unreleased `main` feature is required.
+The brief pinned NSH 0.4.0; the pin moved to 0.5.0 on 2026-11-12 with no source change. `nsh-core` 0.5.0 is on crates.io and CI installs the 0.5.0 CLI, so the crate builds against the released version; no unreleased `main` feature is required.
 
 ## Native StoreKit 2 and Play Billing, no hosted service
 
