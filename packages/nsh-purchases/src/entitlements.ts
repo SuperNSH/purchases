@@ -20,8 +20,8 @@ export interface UseEntitlementsOptions {
   purchases?: Purchases;
 }
 
-// NSH 0.4.0's web runtime ships no `lifecycle` accessor: the import stays `undefined` there.
-// Treat that as active, so the first read still runs; the foreground re-check comes back with an NSH release that has it.
+// No NSH runtime checked (0.4.0 and 0.5.1, the web's JS runtime included) lacks `lifecycle`;
+// the guard is cheap safety for one that does: treat that as active, so the first read still runs.
 function lifecycleState(): "active" | "inactive" | "background" {
   return typeof lifecycle === "function" ? lifecycle() : "active";
 }

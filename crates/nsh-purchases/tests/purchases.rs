@@ -234,6 +234,7 @@ fn empty_product_ids_are_an_invalid_argument() {
     run(async {
         let error = purchases.products(&[]).await.unwrap_err();
         assert_eq!(error.kind(), ErrorKind::InvalidArgument);
+        assert_eq!(fake.product_queries(), 0, "the store was not asked");
     });
 }
 
@@ -300,6 +301,10 @@ fn a_purchase_resolves_exactly_once() {
         assert!(fake.finish_purchase(Ok(store_purchase("coins_100", PurchaseState::Purchased))));
         let purchase = call.await.unwrap().unwrap();
         assert_eq!(purchase.product_id, "coins_100");
+        assert_eq!(
+            purchase.receipt, "sandbox-receipt-coins_100",
+            "the receipt reaches the app exactly as the store gave it"
+        );
 
         // A second answer to a finished purchase has nothing to resolve.
         assert!(!fake.finish_purchase(Ok(store_purchase("coins_100", PurchaseState::Purchased))));
@@ -429,6 +434,11 @@ fn restore_returns_purchased_and_restored_purchases() {
             !pro_unlock_row.unwrap().receipt.is_empty(),
             "the receipt rides along"
         );
+        assert_eq!(
+            pro_unlock_row.unwrap().receipt,
+            "sandbox-receipt-pro_unlock",
+            "the receipt reaches the app exactly as the store gave it"
+        );
         let coins_row = restored
             .iter()
             .find(|purchase| by_id(purchase, "coins_100"));
@@ -436,6 +446,11 @@ fn restore_returns_purchased_and_restored_purchases() {
             coins_row.unwrap().state,
             PurchaseState::Purchased,
             "a purchase the store never finished comes back still purchased"
+        );
+        assert_eq!(
+            coins_row.unwrap().receipt,
+            "sandbox-receipt-coins_100",
+            "the receipt reaches the app exactly as the store gave it"
         );
     });
 }
@@ -558,6 +573,12 @@ fn concurrent_non_purchase_calls_do_not_claim_the_gate() {
         purchases.entitlements().await.unwrap();
         purchases.pending().await.unwrap();
         purchases.country_code().await.unwrap();
+        assert!(purchases.restore().await.unwrap().is_empty());
+        assert_eq!(
+            fake.restores(),
+            1,
+            "the restore ran while a purchase was in flight"
+        );
         assert_eq!(
             fake.purchases_started(),
             1,

@@ -45,6 +45,7 @@ struct FakeState {
     restores: usize,
     cancels: usize,
     product_queries: usize,
+    entitlement_reads: usize,
     last_product_ids: Option<Vec<String>>,
     last_purchase: Option<(String, PurchaseOptions)>,
     last_finished: Option<String>,
@@ -79,6 +80,7 @@ impl FakeBackend {
                 restores: 0,
                 cancels: 0,
                 product_queries: 0,
+                entitlement_reads: 0,
                 last_product_ids: None,
                 last_purchase: None,
                 last_finished: None,
@@ -169,6 +171,11 @@ impl FakeBackend {
     /// How many times products were queried.
     pub fn product_queries(&self) -> usize {
         self.lock().product_queries
+    }
+
+    /// How many times entitlements were read.
+    pub fn entitlement_reads(&self) -> usize {
+        self.lock().entitlement_reads
     }
 
     /// The ids the last product query asked for.
@@ -332,7 +339,8 @@ impl Backend for FakeBackend {
 
     fn entitlements(&self) -> BackendFuture<'_, Result<Vec<Entitlement>, PurchasesError>> {
         let answer = {
-            let state = self.lock();
+            let mut state = self.lock();
+            state.entitlement_reads += 1;
             match state.entitlements.clone() {
                 Some(answer) => answer,
                 None => {

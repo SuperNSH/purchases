@@ -17,4 +17,6 @@ thiserror = "2.0.21"
 tokio = { version = "1.54.1", default-features = false, features = ["macros", "sync", "time"] }
 
 [dev-dependencies]
+nsh-engine = { version = "0.5.1", default-features = false }
+nsh-testing = { version = "0.5.1", default-features = false }
 tokio = { version = "1.54.1", default-features = false, features = ["rt", "time", "test-util"] }

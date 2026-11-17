@@ -5,6 +5,7 @@ import {
   type Purchase,
   type PurchaseErrorCode,
   type PurchasesBackend,
+  rustBackend,
 } from "../src";
 
 /** Lets the answer of a finished backend call reach the gate, which frees itself a microtask later. */
@@ -322,6 +323,14 @@ test("entitlements exclude consumed consumables and respect expiry", async () =>
 test("a memory backend configured unavailable answers not available", async () => {
   const backend = memoryBackend({ available: false });
   const purchases = new Purchases({ backend });
+  expect(await purchases.isAvailable()).toBe(false);
+  await expect(purchases.initialize()).rejects.toMatchObject({
+    code: "ERR_PURCHASES_NOT_AVAILABLE",
+  });
+});
+
+test("the Rust crate's backend on a desktop with no store host is not available", async () => {
+  const purchases = new Purchases({ backend: rustBackend() });
   expect(await purchases.isAvailable()).toBe(false);
   await expect(purchases.initialize()).rejects.toMatchObject({
     code: "ERR_PURCHASES_NOT_AVAILABLE",
