@@ -110,3 +110,16 @@ canonical test still passes.
   2 was clean.
 - Status: the crate and package build and their suites pass locally under the gates
   the brief names. CI has NOT executed them yet (no commits/pushes, per the brief).
+
+## Corrections, 2026-11-17
+
+This report describes the state at the end of that run. Three statements above are
+no longer true of the repo:
+
+- The pushes and CI claims ("No commits or pushes were made"; "No CI run has
+  executed — nothing has been pushed"; "CI has NOT executed them yet") were true
+  then. The repo has since been pushed, and CI runs the gates green on every push
+  (run 43967641194, 2026-11-16).
+- ci.yml's installer is NSH v0.5.1, not the v0.4.0 named above.
+- docs/parity.md has 93 data rows, not 105; the 105 counted table lines, headers
+  included.

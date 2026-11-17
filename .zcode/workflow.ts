@@ -1,6 +1,8 @@
 // Plan for In-app purchases in this repo. Phases run in order for each area:
 // implement, audit, unit tests, device test, vision, smoke.
 // Gates on every area: cargo fmt --check, cargo clippy -D warnings, cargo test.
+// Statuses reflect what ran (see purchases-run-report.md): device-test needs an
+// NSH host that registers StoreKitHost/BillingHost, which lives outside this repo.
 
 export type Phase = "implement" | "audit" | "unit-tests" | "device-test" | "vision" | "smoke";
 
@@ -22,10 +24,10 @@ export const workflow = {
       name: "purchases",
       phases: ["implement", "audit", "unit-tests", "device-test", "vision", "smoke"],
       status: {
-        "implement": "not-started",
-        "audit": "not-started",
-        "unit-tests": "not-started",
-        "device-test": "not-started",
+        "implement": "done",
+        "audit": "done",
+        "unit-tests": "done",
+        "device-test": "blocked",
         "vision": "not-started",
         "smoke": "not-started",
       },

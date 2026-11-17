@@ -13,7 +13,7 @@ The brief names four repos to clone into `.refs/` (read-only, git-ignored). Thre
 
 ## NSH 0.5.1
 
-The brief pinned NSH 0.4.0; the pin moved to 0.5.0 on 2026-11-12 and to 0.5.1 on 2026-11-16, both with no source change. `nsh-core` 0.5.1 is on crates.io and CI installs the 0.5.1 CLI, so the crate builds against the released version; no unreleased `main` feature is required.
+The run plan pinned NSH 0.4.0 (`.zcode/purchases-run.ts`); the pin moved to 0.5.0 on 2026-11-12 and to 0.5.1 on 2026-11-16, both with no source change. `nsh-core` 0.5.1 is on crates.io and CI installs the 0.5.1 CLI, so the crate builds against the released version; no unreleased `main` feature is required.
 
 ## Native StoreKit 2 and Play Billing, no hosted service
 
