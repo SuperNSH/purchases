@@ -338,3 +338,76 @@ Every non-Done row, with its reason:
 14. **entitlements.ts:23 (NSH 0.4.0 web-lifecycle comment)** — Likely stale on 0.5.1, unverified from this repo; the defensive guard makes it safe either way. Re-word or verify on a web target.
 
 Surprising finds, for the record: the doc set is unusually honest (Accepted/Platform-only rows really do carry no test, and the TS test that overclaims in its name says so in a comment inside, purchases.test.tsx:310-311); the facade's two genuinely subtle behaviours — the generation guard and drop-cancels-store — are real and tested in both languages; the only outright false row in sixty pages of docs is the Android `payment-declined` mapping; and the store glue living outside this repo means the Apple/Android bridges here are mapping tables plus plumbing, exactly as decisions.md admits.
+
+## Re-audit, 2026-11-17 (Phase 6)
+
+Every gate re-run locally at HEAD `ff620ab` (working tree clean, `git status --short` empty), kache bypassed (`RUSTC_WRAPPER=` unset, kache shims stripped from PATH). Exit codes:
+
+| Gate | Exit | Result |
+|---|---|---|
+| `cargo fmt --all -- --check` | 0 | clean |
+| `cargo clippy --all-targets -- -D warnings` | 0 | clean |
+| `cargo test --all-targets` | 0 | 44 passed, 0 failed: 4 lib, 26 purchases, 5 entitlements, 5 apple, 4 android |
+| clippy `aarch64-apple-ios` | 0 | clean |
+| clippy `aarch64-apple-ios-sim` | 0 | clean |
+| clippy `wasm32-unknown-unknown` (llvm-ar via `$(brew --prefix llvm)/bin`) | 0 | clean |
+| clippy `aarch64-linux-android` (NDK 28.2.13676358 cc/linker/ar) | 0 | clean |
+| `packages/nsh-purchases`: `nsh check` / `nsh build` / `nsh test` | 0 / 0 / 0 | build output zero-warning; 30 tests passed, 0 failed |
+| `examples/demo`: `nsh check` / `nsh build` / `nsh test` | 0 / 0 / 0 | build output zero-warning; 6 tests passed, 0 failed |
+
+The two known non-issues appeared only in `nsh test` output (the headless runner's dev-profile `__eh_frame` linker note as "1 warning: -v shows it", and the `status bar is not granted` lines) — neither in any `nsh build` log, which is the zero-warning gate. All since commit `bc9d1b4` (tests) and `ff620ab` (this audit's fixes).
+
+### New status of every previously non-Done row
+
+| Row | New status | Evidence |
+|---|---|---|
+| E2 | **Done** | `concurrent_non_purchase_calls_do_not_claim_the_gate` (tests/purchases.rs:561) now calls `restore()` during the run (:576) and asserts `fake.restores()==1` "the restore ran while a purchase was in flight" (:577-581); the counter is `FakeBackend::restores()` (src/fake.rs:162) |
+| E5 | **Done** | `empty_product_ids_are_an_invalid_argument` (tests/purchases.rs:231) now asserts `fake.product_queries()==0` "the store was not asked" (:237; counter at src/fake.rs:172) |
+| E33 | **Done** | Receipt equality asserted byte-for-byte against the store's payload in three places: `a_purchase_resolves_exactly_once` (tests/purchases.rs:304-307, `"sandbox-receipt-coins_100"`), `restore_returns_purchased_and_restored_purchases` (:437-441, :450-453, both rows); the payload literal comes from `store_purchase` (:35). The "never branches on environment" half still holds by reading: the only `sandbox` matches in `src/` are fixture names |
+| P5-14 | **Done** | Both hooks now tested. Rust: tests/entitlements.rs, 5 tests on `use_entitlements` over a `Headless` engine (first read, re-run only on change, changed answer on foreground return, failed read's code, refresh dead after owner gone — :154, :163, :186, :201, :211). TS: tests/entitlements.test.tsx, 5 tests on `useEntitlements` (first read, failed read, refresh, stale read ignored by generation guard, no read after dispose — :18, :35, :48, :73, :107) |
+| rustBackend (folded into P5-14's Partial) | **Done** | "the Rust crate's backend on a desktop with no store host is not available" (purchases.test.tsx:332-338) instantiates `new Purchases({ backend: rustBackend() })` and asserts not-available + the code; parity.md:20 cites it |
+| A4 | **Partial — unchanged in kind, better attested** | The fail-first half is still a process claim with no machine artifact in the tree. What the tree now records: commit `bc9d1b4` states "Every new or strengthened assertion was seen to fail first", and the run report gained a dated Corrections section (see ZR1) — a report that corrects itself is more credible, not less. Unverifiable from the tree alone: any individual red-first run; the attestations are commit messages and prose, not logs |
+| A6 | **Done** | With P6-12 fixed, every parity row's citation now covers its claim; re-walked rows spot-checked below |
+| P6-12 | **Done** (the row is now honest) | parity.md:141 now reads "Apple: `PaymentInvalid`; Android: `Backend` — BillingClient documents no declined-payment raw code, so such a failure lands on `ERROR`", status Partial. Matches the code: `map_billing_code` has no PaymentInvalid arm, `ERROR => Backend` (android.rs:81), unknown keeps status (:87); Apple raw 3 → `PaymentInvalid` (apple.rs:151, table tests/apple.rs:32) |
+| R2 | **Done** | README.md:9 now says "the gates pass and CI runs them on every push to `master`"; the "no CI run yet" claim is gone |
+| S1 | **Done** | `site/` deleted; the Pages job now deploys the packaged web demo itself (ci.yml:242-274), so no stale scaffold page can be published |
+| Z1 | **Done** | .zcode/workflow.ts:26-33: implement/audit/unit-tests `done`, device-test `blocked` (reason at :4-5: needs an NSH host registering StoreKitHost/BillingHost, outside this repo), vision/smoke `not-started` — matches reality |
+| ZR1 | **Done** | Run report gained "## Corrections, 2026-11-17" (purchases-run-report.md:115-124) naming all three no-longer-true statements: pushes/CI (green run 43967641194), the v0.5.1 installer, and 93 data rows not 105. The body is left as the historical record, correctly |
+| ZR2 | **Done** | Same Corrections section, line 123 |
+| ZR6 | **Done** | Same Corrections section, lines 123-124 |
+| entitlements.ts 0.4.0 web-lifecycle comment | **Done** | entitlements.ts:19-21 reworded: no checked NSH runtime (0.4.0 and 0.5.1) lacks `lifecycle`; the guard is "cheap safety" defaulting to active. Guard kept verbatim at :22. Commit `bc9d1b4` records the verification "against the 0.5.1 sources"; that check itself left no artifact, but the claim no longer contradicts the sources and the guard makes it non-load-bearing |
+
+### Spot-checks of rows marked Done (10 + 3 extra, all still hold)
+
+1. **G2/E9** — `a_purchase_resolves_exactly_once` now at tests/purchases.rs:296 (cited :295), `a_dropped_purchase_call_cancels_the_store_request` at :594 (cited :573); both asserts intact, drop-cancels asserts `cancels()==1` (:601-605); TS second-`finishPurchase`-false at purchases.test.tsx:54. Citation drift only.
+2. **E13** — timeout test unchanged at tests/purchases.rs:146-168: `ERR_PURCHASES_TIMEOUT` + gate recovery asserted.
+3. **E12** — tests/apple.rs:220-246 unchanged: raw 2 → `Cancelled`, pending state 0 → `Ok`/`Pending`.
+4. **E17** — tests/android.rs:205-260 unchanged: consume reaches `consume` (:221-225), consumable never acknowledged (:226-229), finish acknowledges (:241-245), non-consumable never reaches consume (:252-258).
+5. **E28** — `STOREKIT_MAP` still 8 rows at tests/apple.rs:28-37 (incl. `(3, "ERR_PURCHASES_PAYMENT_INVALID")`); test :170-190 asserts code and raw-as-status for every arm.
+6. **E29** — tests/apple.rs:193-217: 99 and -1 → `Backend` + status kept.
+7. **E30/E31** — `BILLING_MAP` still 12 rows at tests/android.rs:25-41 and contains **no** PaymentInvalid entry — exactly what the fixed P6-12 row now says; tests :158, :177 unchanged.
+8. **E26** — `an_unsupported_target_is_not_available` now at :550 (cited :535); asserts unavailable + code (:554-556).
+9. **R5 (README Checks)** — README.md:44-51 matches current ci.yml exactly: fmt (:36), clippy `--all-targets --all-features` + tests on the 3-OS matrix (:45, :63-64), the four cross-targets (:74-77), `nsh check` + `nsh build` failed on any warn (`! grep -i warn`, :118-119, :125-126) + `nsh test` for package and demo (:114-127), nine demo targets (:141-149), latest-release replace (:231-240), Pages (:242-274).
+10. **R4 (README Layout)** — README.md:34-40 lists crates/, packages/, examples/demo/, docs/, .zcode/ — all exist; `site/` gone and no longer mentioned.
+11. **R1 (Pages URL)** — README.md:5 URL unchanged; the deploy exists, now as ci.yml's `pages` job. (The original row's `pages.yml` citation is itself now stale — the job moved into ci.yml — but the claim holds.)
+12. **parity.md intro test-file list** — parity.md:12 now names all four Rust test files incl. `entitlements.rs` and all three TS files incl. `entitlements.test.tsx`. Accurate.
+13. **A2 (goals acceptance)** — goals.md:96-101's command list is a subset of what ci.yml now runs (which adds cross-targets, the build gate, demo). Holds.
+
+Citation drift, for the record: `bc9d1b4` added asserts to tests/purchases.rs, so every test after `restore_returns_purchased_and_restored_purchases` moved — rows above cite old lines for E16 (:468 now), E22 (:415), E23 (:459), E24 (:485), E25 (:515), E26 (:550), E27 (:594), E32 (:610). Substantively unchanged; apple.rs and android.rs line numbers are untouched.
+
+### NSH-version table re-check
+
+- Cargo.toml:15 `nsh-core = "0.5.1"` — keep; dev-dependencies for the hook tests added `nsh-engine`/`nsh-testing` 0.5.1 (:20-21); Cargo.lock resolves 0.5.1 from the registry (:1088-1092).
+- decisions.md:14-16 — the "brief pinned 0.4.0" nit is fixed: it now attributes the pin to `.zcode/purchases-run.ts`. Keep.
+- entitlements.ts — resolved (above).
+- ci.yml `NSH_VERSION: v0.5.1` — keep; now three mentions (:109, :175, :184), the table's `:43` citation has drifted.
+- purchases-run-report.md:33 — resolved by the Corrections section.
+- purchases-run.ts 0.4.0 pins — historical, no action, unchanged.
+
+### Correction to "Gaps versus the reference-repo standard"
+
+That section compared against the stale clone in `.refs/biometrics`, which predates the publish/Pages jobs. The live references — `~/fo/nsh-biometrics` (HEAD `170ef18`, 2026-11-17) and `~/fo/nsh-icons` (HEAD `2be7b9f`, 2026-11-17) — both run the full pipeline: rust OS matrix, cross-target checks, TS check/build-with-zero-warnings/test, nine-target demo builds, a replace-`latest` release job, and a Pages deploy. Every gap that section listed (cross-targets, OS matrix, `nsh build` warning gate, demo builds, compiler caching, publish) is now closed in this repo's ci.yml; on Pages this repo matches them.
+
+### Corrected summary
+
+Of the original 175 rows, 174 are now Done and one — A4, the fail-first process claim — remains Partial, attested by commit messages and the corrected run report but unverifiable from the tree by nature. Test counts in the original audit's key-files line and ZR3/ZR4 are superseded: 44 Rust tests (4 lib, 26 purchases, 5 entitlements, 5 apple, 4 android) and 30 package TS tests (20 purchases, 5 errors, 5 entitlements), plus 6 demo tests. All eleven local gates pass with exit 0 at `ff620ab`.
