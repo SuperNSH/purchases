@@ -411,3 +411,7 @@ That section compared against the stale clone in `.refs/biometrics`, which preda
 ### Corrected summary
 
 Of the original 175 rows, 174 are now Done and one — A4, the fail-first process claim — remains Partial, attested by commit messages and the corrected run report but unverifiable from the tree by nature. Test counts in the original audit's key-files line and ZR3/ZR4 are superseded: 44 Rust tests (4 lib, 26 purchases, 5 entitlements, 5 apple, 4 android) and 30 package TS tests (20 purchases, 5 errors, 5 entitlements), plus 6 demo tests. All eleven local gates pass with exit 0 at `ff620ab`.
+
+### CI at NSH 0.6.0, 2026-11-18
+
+Run https://github.com/SuperNSH/purchases/actions/runs/44378069680 (commit `f729cfc`, "build: move to NSH 0.6.0") is green: format, rust on ubuntu, macos and windows, the four cross-target checks, typescript (package and demo: check, warning-free build, test), all nine demo builds, and the publish and Pages jobs. The macOS rust job was cancelled once at the 60-minute limit and passed on `gh run rerun --failed`. A4 (the red-first process claim) stays Partial. No store interaction ran anywhere; device tests stay blocked on an NSH host registering `StoreKitHost`/`BillingHost`, and real App Store or Play accounts are out of scope.
