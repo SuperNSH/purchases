@@ -20,8 +20,8 @@ export interface UseEntitlementsOptions {
   purchases?: Purchases;
 }
 
-// No NSH runtime checked (0.4.0 and 0.5.1, the web's JS runtime included) lacks `lifecycle`;
-// the guard is cheap safety for one that does: treat that as active, so the first read still runs.
+// NSH 0.6.0's web runtime exports `lifecycle` too (nsh-platform-web/web/browser/bootstrap.js);
+// the guard is cheap safety for a runtime without it: treat that as active, so the first read still runs.
 function lifecycleState(): "active" | "inactive" | "background" {
   return typeof lifecycle === "function" ? lifecycle() : "active";
 }
