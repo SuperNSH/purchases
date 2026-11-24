@@ -1,0 +1,8 @@
+{
+  "nsh": ">=0.6",
+  "exports": {
+    "nsh-purchases": "tsx/index.ts",
+    "nsh-purchases/rust": "tsx/rust.ts",
+    "nsh-purchases/memory": "tsx/memory.ts"
+  }
+}

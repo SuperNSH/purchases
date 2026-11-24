@@ -4,6 +4,18 @@ Products, purchases, restores and entitlements, without a backend.
 
 Part of the Native Shell (NSH) capability set. Same layout as the other SuperNSH repos: a Rust crate, a TypeScript package, docs in `docs/`, CI on GitHub Actions, and a web demo on GitHub Pages at https://supernsh.github.io/purchases/.
 
+## Install
+
+In the app's directory:
+
+```sh
+nsh add nsh-purchases
+```
+
+`nsh add` needs NSH main or the nightly: the 0.6.0 and 0.6.1 releases do not have it. In a Rust app, `cargo add nsh-purchases` works with any of them.
+
+The TSX imports are `nsh-purchases`, `nsh-purchases/rust` and `nsh-purchases/memory`.
+
 ## Status
 
 Implemented against mocks. The Rust crate in `crates/nsh-purchases` and the TypeScript package in `packages/nsh-purchases` carry the facade, the stable error codes, the StoreKit and Billing bridges and their tests; `docs/goals.md` is the contract and [docs/parity.md](docs/parity.md) maps each reference API to ours; the gates pass and CI runs them on every push to `master`. Every store interaction is a mock or a sandbox fixture — nothing here has touched a real store account, product or purchase. The demo in `examples/demo` exercises the same API on the in-memory fake store ([Try the demo](#try-the-demo)).
