@@ -12,7 +12,7 @@ In the app's directory:
 nsh add nsh-purchases
 ```
 
-`nsh add` needs NSH main or the nightly: the 0.6.0 and 0.6.1 releases do not have it. In a Rust app, `cargo add nsh-purchases` works with any of them.
+`nsh add` needs NSH 0.7 or later: the 0.6.0 and 0.6.1 releases do not have it. In a Rust app, `cargo add nsh-purchases` works with any of them.
 
 The TSX imports are `nsh-purchases`, `nsh-purchases/rust` and `nsh-purchases/memory`.
 
