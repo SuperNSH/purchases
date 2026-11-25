@@ -14,11 +14,11 @@ name = "nsh_purchases"
 path = "src/lib.rs"
 
 [dependencies]
-nsh-core = "0.7.0"
+nsh-core = "0.7.1"
 thiserror = "2.0.21"
 tokio = { version = "1.54.1", default-features = false, features = ["macros", "sync", "time"] }
 
 [dev-dependencies]
-nsh-engine = { version = "0.7.0", default-features = false }
-nsh-testing = { version = "0.7.0", default-features = false }
+nsh-engine = { version = "0.7.1", default-features = false }
+nsh-testing = { version = "0.7.1", default-features = false }
 tokio = { version = "1.54.1", default-features = false, features = ["rt", "time", "test-util"] }
